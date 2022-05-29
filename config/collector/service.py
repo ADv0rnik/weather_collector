@@ -73,6 +73,18 @@ def is_rain(data):
 
 
 def calculate_daily_index(temp, hum, rain):
+    """Calculate daily fire hazard index using specific equations
+
+    Parameters
+    ----------
+    a, b - const coefficients to calculate dew point value
+    dew_point - a required parameter to calculate hazard index
+
+    Returns
+    ----------
+    int
+        daily fire hazard index
+    """
     a = 17.27
     b = 237.7
     tmp = (a*temp) / (b + temp) + math.log(hum / 100)
