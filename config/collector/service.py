@@ -1,35 +1,45 @@
 import requests
 import math
-
 from decouple import config
-
 from .models import Weather
 
 
+KEY = config('API_KEY')
+DEFAULT_RAIN_VALUE = 0.0
+DEFAULT_HAZARD_INDEX = 50
+API_URL = 'https://api.openweathermap.org/data/2.5/find?q={}&appid=' + KEY + '&units=metric'
 REGIONS = [
     'Aktsyabrski',
     'Brahin',
-    'Vyetka',
-    'Gomel',
+    'Buda-Kashalyova'    
+    'Chachersk',
     'Dobrush',
+    'Gomel',
+    'Vyetka',
     'Mazyr',
+    'Karma',
+    'Kalinkavichy',
     'Khoyniki',
     'Loyew',
+    'Lelchytsy',
+    'Narowlya',
+    'Pyetrykaw',
     'Rahachow',
     'Rechytsa',
-    'Chachersk',
+    'Svyetlahorsk',
+    'Yelsk',
+    'Zhlobin',
+    'Zhytkavichy'
 ]
 
 
-def get_data():
-    key = config('API_KEY')
-    api_url = 'https://api.openweathermap.org/data/2.5/find?q={}&appid=' + key + '&units=metric'
-    data = []
+def get_data_from_api() -> dict:
+    data = list()
     for region in REGIONS:
-        data.append(requests.get(api_url.format(region)).json())
-    cleaned_data = transform_weather(data)
-    print(cleaned_data)
-    return cleaned_data
+        weather_data = requests.get(API_URL.format(region))
+        assert weather_data.status_code == 200
+        data.append(weather_data.json())
+    return get_clean_data(data)
 
 
 def update_weather(data):
@@ -44,51 +54,73 @@ def update_weather(data):
         weather.save()
 
 
-def transform_weather(data_list):
-    weather_list = list()
-    for data in data_list:
-        temp = data.get('list')[0].get('main').get('temp')
-        hum = data.get('list')[0].get('main').get('humidity')
-        rain = is_rain(data)
-        weather_dict = {
-            'region': data.get('list')[0].get('name'),
-            'temp': temp,
-            'hum': hum,
-            'rain': rain,
-            'fire_hazard_index_daily': calculate_daily_index(
-                temp=temp,
-                hum=hum,
-                rain=rain
-            ),
-        }
-        weather_list.append(weather_dict)
-    return weather_list
-
-
-def is_rain(data):
-    rain = 0.0
-    if data.get('list')[0].get('rain') is None:
-        return rain
-    return data.get('list')[0].get('rain').get('1h', 0.0)
-
-
-def calculate_daily_index(temp, hum, rain):
-    """Calculate daily fire hazard index using specific equations
+def get_clean_data(response: list) -> dict:
+    """
+    The method extract necessary data from api response and put it into JSON for further treatment
 
     Parameters
     ----------
-    a, b - const coefficients to calculate dew point value
-    dew_point - a required parameter to calculate hazard index
+    response
+        list of dictionaries contained weather data
 
     Returns
+    -------
+    weather
+        dictionary of temperature, humidity, precipitation and calculated hazard index for each predefined region
+
+    """
+    weather = dict()
+    for item in response:
+        data = item.get('list')[0]
+        city = data.get('name')
+        coord = data.get('coord')
+        rain = get_rain(data)
+        for key, value in data.items():
+            if key == 'main':
+                temp = value.get('temp')
+                hum = value.get('humidity')
+                daily_hazard_index = calculate_daily_index(temp=temp, humidity=hum, rain=rain),
+                weather[city] = {
+                    "coord": coord,
+                    "temp": temp,
+                    "humidity": hum,
+                    "rain": rain,
+                    "daily_index": daily_hazard_index,
+                }
+    return weather
+
+
+def get_rain(data: dict) -> float:
+    rain = data.get('rain')
+    if not rain:
+        return DEFAULT_RAIN_VALUE
+    return rain
+
+
+def calculate_daily_index(**kwargs):
+    """
+    Calculate daily fire hazard index using specific equations a, b, dew_point - const coefficients to calculate
+    dew point value required parameter to calculate hazard index
+
+    Parameters
     ----------
+    kwargs
+        temperature, humidity, precipitation
+
+    Returns
+    -------
     int
-        daily fire hazard index
+        calculated daily fire hazard index
     """
     a = 17.27
     b = 237.7
-    tmp = (a*temp) / (b + temp) + math.log(hum / 100)
-    dew_point = (b*tmp) / (a - tmp)
-    if rain >= 5:
-        return int(((temp - dew_point)*temp)*0.1)
-    return int((temp - dew_point)*temp)
+    try:
+        tmp = (a * kwargs.get('temp')) / (b + kwargs.get('temp')) + math.log(kwargs.get('humidity') / 100)
+        dew_point = (b * tmp) / (a - tmp)
+    except ZeroDivisionError as error:
+        print(f"An error occurred {error}")
+        return DEFAULT_HAZARD_INDEX
+    else:
+        if kwargs.get('rain') >= 5:
+            return int(((kwargs.get('temp') - dew_point) * kwargs.get('temp')) * 0.1)
+        return int((kwargs.get('temp') - dew_point) * kwargs.get('temp'))

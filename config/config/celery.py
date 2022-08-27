@@ -14,7 +14,7 @@ app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 app.conf.beat_schedule = {
     "get-daily-weather-data": {
         "task": "get-weather-data",
-        "schedule": crontab(minute=0, hour=17),
+        "schedule": crontab(minute='*/1'),
     },
 }
 
