@@ -11,7 +11,7 @@ API_URL = 'https://api.openweathermap.org/data/2.5/find?q={}&appid=' + KEY + '&u
 REGIONS = [
     'Aktsyabrski',
     'Brahin',
-    'Buda-Kashalyova'    
+    'Buda-Kashalyova',
     'Chachersk',
     'Dobrush',
     'Gomel',
@@ -43,13 +43,18 @@ def get_data_from_api() -> dict:
 
 
 def update_weather(data):
-    for inst in data:
+    for key, value in data.items():
+        region = key,
+        temp = value.get('temp'),
+        hum = value.get('humidity'),
+        rain = value.get('rain'),
+        daily_index = value.get('daily_index')
         weather = Weather.objects.create(
-            region=inst['region'],
-            temp=inst['temp'],
-            hum=inst['hum'],
-            rain=inst['rain'],
-            fire_hazard_index_daily=inst['fire_hazard_index_daily'],
+            region=region[0],
+            temp=temp[0],
+            hum=hum[0],
+            rain=rain[0],
+            fire_hazard_index_daily=daily_index[0],
         )
         weather.save()
 
@@ -94,7 +99,7 @@ def get_rain(data: dict) -> float:
     rain = data.get('rain')
     if not rain:
         return DEFAULT_RAIN_VALUE
-    return rain
+    return rain.get('1h')
 
 
 def calculate_daily_index(**kwargs):
@@ -121,6 +126,6 @@ def calculate_daily_index(**kwargs):
         print(f"An error occurred {error}")
         return DEFAULT_HAZARD_INDEX
     else:
-        if kwargs.get('rain') >= 5:
+        if (rain := kwargs.get('rain')) >= 5:
             return int(((kwargs.get('temp') - dew_point) * kwargs.get('temp')) * 0.1)
-        return int((kwargs.get('temp') - dew_point) * kwargs.get('temp'))
+        return round(float((kwargs.get('temp') - dew_point) * kwargs.get('temp')), 2)
