@@ -1,7 +1,6 @@
 from django.shortcuts import HttpResponse
 
 from collector import tasks
-from collector.models import Weather
 
 
 def index(request):
