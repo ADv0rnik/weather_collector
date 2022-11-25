@@ -5,9 +5,9 @@ from api.views import WeatherViewSet
 
 
 router = routers.SimpleRouter()
-router.register(r'weather', WeatherViewSet)
+router.register(r'weather', WeatherViewSet, basename='weather')
 
-
+print(router.urls)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('collector.urls')),

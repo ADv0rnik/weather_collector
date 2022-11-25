@@ -2,6 +2,7 @@ import requests
 import math
 from decouple import config
 from .models import Weather
+from django_filters import rest_framework as filters
 
 
 KEY = config('API_KEY')
