@@ -1,10 +1,11 @@
 from config.celery import app
 
-from collector.service import get_data_from_api, update_weather
+from collector.service import WeatherCollector
 
 
 @app.task(name="get-weather-data")
 def get_weather_data():
-    data = get_data_from_api()
-    update_weather(data)
+    weather_collector = WeatherCollector()
+    data = weather_collector.get_data_from_api()
+    weather_collector.update_weather(data)
     return f"Success!"
