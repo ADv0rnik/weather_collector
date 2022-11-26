@@ -1,8 +1,8 @@
 from django.db import models
-from enum import Enum
 
 
 class Weather(models.Model):
+    region_id = models.IntegerField(blank=False, default=1)
     region = models.CharField(max_length=50)
     temp = models.FloatField(blank=False)
     hum = models.IntegerField(blank=False)
