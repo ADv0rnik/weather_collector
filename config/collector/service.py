@@ -10,29 +10,10 @@ class WeatherCollector:
     DEFAULT_RAIN_VALUE = 0.0
     DEFAULT_HAZARD_INDEX = 50
     API_URL = 'https://api.openweathermap.org/data/2.5/find?q={}&appid=' + KEY + '&units=metric'
-    CITIES_ID_MAPPING = {
-        'Aktsyabrski': 17,
-        'Brahin': 18,
-        'Buda-Kashalyova': 19,
-        'Chachersk': 20,
-        'Dobrush': 21,
-        'Gomel': 22,
-        'Vyetka': 34,
-        'Mazyr': 28,
-        'Karma': 24,
-        'Kalinkavichy': 23,
-        'Khoyniki': 25,
-        'Loyew': 26,
-        'Lelchytsy': 27,
-        'Narowlya': 29,
-        'Pyetrykaw': 30,
-        'Rahachow': 31,
-        'Rechytsa': 32,
-        'Svyetlahorsk': 33,
-        'Yelsk': 35,
-        'Zhlobin': 36,
-        'Zhytkavichy': 37
-    }
+    CITIES_ID_MAPPING = {'Aktsyabrski': 17, 'Brahin': 18, 'Buda-Kashalyova': 19, 'Chachersk': 20, 'Dobrush': 21,
+                         "Homyel'": 22, 'Vyetka': 34, 'Mazyr': 28, 'Karma': 24, 'Kalinkavichy': 23,
+                         'Khoyniki': 25, 'Loyew': 26, 'Lelchytsy': 27, 'Narowlya': 29, 'Pyetrykaw': 30,
+                         'Rahachow': 31, 'Rechytsa': 32, 'Svyetlahorsk': 33, "Yel’sk": 35, 'Zhlobin': 36, 'Zhytkavichy': 37}
 
     def get_data_from_api(self) -> dict:
         data = list()
@@ -55,26 +36,27 @@ class WeatherCollector:
         -------
         weather
             dictionary of temperature, humidity, precipitation and calculated hazard index for each predefined region
-
         """
         weather = dict()
         for item in response:
-            data = item.get('list')[0]
-            city = data.get('name')
-            coord = data.get('coord')
-            rain = self.get_rain(data)
-            for key, value in data.items():
-                if key == 'main':
-                    temp = value.get('temp')
-                    hum = value.get('humidity')
-                    daily_hazard_index = self.calculate_daily_index(temp=temp, humidity=hum, rain=rain),
-                    weather[city] = {
-                        "coord": coord,
-                        "temp": temp,
-                        "humidity": hum,
-                        "rain": rain,
-                        "daily_index": daily_hazard_index,
-                    }
+            print(item)
+            if data := item.get('list', {})[0]:
+                print(data)
+                city = data.get('name')
+                coord = data.get('coord')
+                rain = self.get_rain(data)
+                for key, value in data.items():
+                    if key == 'main':
+                        temp = value.get('temp')
+                        hum = value.get('humidity')
+                        daily_hazard_index = self.calculate_daily_index(temp=temp, humidity=hum, rain=rain),
+                        weather[city] = {
+                            "coord": coord,
+                            "temp": temp,
+                            "humidity": hum,
+                            "rain": rain,
+                            "daily_index": daily_hazard_index,
+                        }
         return weather
 
     def update_weather(self, data):
@@ -130,3 +112,7 @@ class WeatherCollector:
             if (rain := kwargs.get('rain')) >= 5:
                 return int(((kwargs.get('temp') - dew_point) * kwargs.get('temp')) * 0.1)
             return round(float((kwargs.get('temp') - dew_point) * kwargs.get('temp')), 2)
+
+
+class WeatherFilter(filters.FilterSet):
+    pass
