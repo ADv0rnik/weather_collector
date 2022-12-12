@@ -44,9 +44,8 @@ class WeatherCollector:
         """
         weather = dict()
         for item in response:
-            print(item)
             if data := item.get('list', {})[0]:
-                print(data)
+                logger.info(f"Data received: {data}")
                 city = data.get('name')
                 coord = data.get('coord')
                 rain = self.get_rain(data)
