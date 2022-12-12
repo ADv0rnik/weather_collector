@@ -1,9 +1,9 @@
 [![Python 3.10](https://img.shields.io/badge/python-3.10-blue.svg)](https://www.python.org/downloads/release/python-3100/)
 
 ### Weather-collector
-#### Aliaksanrd Dvornik (May 17, 2022)
+##### by Alex Dvornik (May 17, 2022)
 
-The application allows to collect and process weather data in order to calculate Fire hazard index for forest fires in Gomel region (Belarus)
+The application allows to collect and process weather data in order to calculate Fire hazard index for forests in Gomel region (Belarus)
 
 #### Usage
 1. Clone repository with the following command
