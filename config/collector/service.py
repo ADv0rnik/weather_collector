@@ -3,6 +3,10 @@ import math
 from decouple import config
 from .models import Weather
 from django_filters import rest_framework as filters
+import logging
+
+
+logger = logging.getLogger('collector')
 
 
 class WeatherCollector:
@@ -19,6 +23,7 @@ class WeatherCollector:
         data = list()
         for region in self.CITIES_ID_MAPPING.keys():
             weather_data = requests.get(self.API_URL.format(region))
+            logger.info(f"GET: {self.API_URL.format(region)}")
             assert weather_data.status_code == 200
             data.append(weather_data.json())
         return self.clean_data(data)
@@ -39,9 +44,8 @@ class WeatherCollector:
         """
         weather = dict()
         for item in response:
-            print(item)
             if data := item.get('list', {})[0]:
-                print(data)
+                logger.info(f"Data received: {data}")
                 city = data.get('name')
                 coord = data.get('coord')
                 rain = self.get_rain(data)
@@ -75,6 +79,7 @@ class WeatherCollector:
                 fire_hazard_index_daily=daily_index[0],
             )
             weather.save()
+            logger.info(f"Object {weather} has been created")
 
     def generate_id(self, region: str) -> int:
         return self.CITIES_ID_MAPPING.get(region)
@@ -106,7 +111,7 @@ class WeatherCollector:
             tmp = (a * kwargs.get('temp')) / (b + kwargs.get('temp')) + math.log(kwargs.get('humidity') / 100)
             dew_point = (b * tmp) / (a - tmp)
         except ZeroDivisionError as error:
-            print(f"An error occurred {error}")
+            logger.error(f"An error occurred {error}. Set HAZARD_INDEX to default")
             return self.DEFAULT_HAZARD_INDEX
         else:
             if (rain := kwargs.get('rain')) >= 5:
