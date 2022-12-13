@@ -1,0 +1,7 @@
+django
+djangorestframework
+django-filter
+django-decouple
+psycopg2-binary
+celery[redis]
+markdown
