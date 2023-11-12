@@ -15,3 +15,6 @@ class Weather(models.Model):
 
     class Meta:
         verbose_name_plural = 'Weather data'
+
+
+# TODO: Update database structure. Make two tables instead of one
