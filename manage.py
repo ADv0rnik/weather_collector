@@ -2,11 +2,6 @@
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
-import logging.config
-import config.settings as config
-
-
-logging.config.dictConfig(config.LOGGING)
 
 
 def main():
