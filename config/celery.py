@@ -11,10 +11,11 @@ app = Celery('config')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
 
+
 app.conf.beat_schedule = {
     "get-daily-weather-data": {
         "task": "get-weather-data",
-        "schedule": crontab(minute='*/1'),
+        "schedule": crontab(minute='*/1')
     },
 }
 

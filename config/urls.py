@@ -11,5 +11,5 @@ print(router.urls)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('collector.urls')),
-    path('api/', include(router.urls)),
+    path('api/v1/', include(router.urls)),
 ]
