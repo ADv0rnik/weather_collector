@@ -1,6 +1,18 @@
 version: '3.9'
 
 services:
+  rabbit:
+    image: lucifer8591/rabbitmq-server:3.7.17
+    container_name: rabbit
+    env_file:
+      - .env
+    hostname: rabbit
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
   db:
     image: postgres:14.5
     container_name: postgres
